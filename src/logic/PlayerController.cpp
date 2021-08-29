@@ -746,10 +746,8 @@ bool PlayerController::EV_Movement(std::shared_ptr<EventMessages::MovementMessag
 
             // Fill position-field
             message.targetPosition = Vob::getTransform(vob).Translation();
-
-            // Fall through to ST_TurnToPos now
         }
-
+            //@fallthrough@
         case EventMessages::MovementMessage::ST_TurnToPos:
         {
             Math::float3 dir = (message.targetPosition - getEntityTransform().Translation());
@@ -1734,7 +1732,7 @@ void PlayerController::traceDownNPCGround()
         LogInfo() << "traceDownNPCGround ITERATION BEGIN";
     }
     Physics::RayTestResult result = hitall[0];
-    Physics::RayTestResult resultWater = hitall[0];
+    //Physics::RayTestResult resultWater = hitall[0];
     bool waterMatFound = false;
     float closestGroundSurfacePos = std::numeric_limits<float>::max();
     float underWaterGroundPos = std::numeric_limits<float>::min();

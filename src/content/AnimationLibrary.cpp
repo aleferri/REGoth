@@ -64,7 +64,10 @@ namespace Animations
                 ModelScriptTextParser p(zen);
                 p.setStrict(false);  // TODO: should be configurable
                 if (!loadModelScript(fn, p))
-                    ;  //return false;
+                {
+                    //return false;
+                }
+
 
                 // MDS always overwrites
                 msb_loaded[withoutExt] = true;
@@ -81,7 +84,9 @@ namespace Animations
                 ZenParser zen(fn, m_World.getEngine()->getVDFSIndex());
                 ModelScriptBinParser p(zen);
                 if (!loadModelScript(fn, p))
-                    ;  //return false;
+                {
+                    //return false;
+                }
 
                 msb_loaded[withoutExt] = false;
             }
@@ -114,10 +119,9 @@ namespace Animations
         ModelAnimationParser p(zen);
         p.setScale(1.0f / 100.0f);
 
-        ModelAnimationParser::EChunkType type;
-        while ((type = p.parse()) != ModelAnimationParser::CHUNK_EOF)
+        while (true)
         {
-            switch (type)
+            switch (p.parse())
             {
                 case ModelAnimationParser::CHUNK_HEADER:
                     data.m_Header = p.getHeader();
@@ -128,10 +132,11 @@ namespace Animations
                     break;
                 case ModelAnimationParser::CHUNK_ERROR:
                     return Handle::AnimationDataHandle::makeInvalidHandle();
+                case ModelAnimationParser::CHUNK_EOF:
+                    return h;
             }
         }
-
-        return h;
+        return Handle::AnimationDataHandle::makeInvalidHandle();
     }
 
     /*
@@ -338,6 +343,8 @@ namespace Animations
                 break;
                 case ModelScriptParser::CHUNK_ERROR:
                     return false;
+                default:
+                    break;
             }
         }
 
