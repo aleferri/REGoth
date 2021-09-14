@@ -2,7 +2,9 @@
 OpenSource-Reimplementation of the zEngine, used by the game "Gothic" and "Gothic II".
 
 # Attention!
-**The project has been restarted. Here is the new repository: https://github.com/REGoth-project/REGoth-bs**
+**The project was restarted and abandoned by the original group. bsFramework was abandoned at the end of 2019 and i guess the effort to both mantain bsFramework and REGoth was too much. Restarted and abandoned repository: https://github.com/REGoth-project/REGoth-bs**
+
+**I am looking at the source code to understand if i can remove some duplicated math and hoping that one day bullet3 compiles without 10.000 warnings.**
 
 Don't forget to check out the [REGoth-Wiki](../../wiki) for more information about the project!
 
