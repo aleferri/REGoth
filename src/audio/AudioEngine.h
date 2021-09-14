@@ -8,6 +8,9 @@
 
 #include <math/mathlib.h>
 
+#include <AL/al.h>
+#include <AL/alc.h>
+
 namespace Audio
 {
     enum class State {

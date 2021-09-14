@@ -333,6 +333,8 @@ namespace Math
         {
             T::_glmt_vector = v._glmt_vector;
         }
+        
+        constexpr t_vector(const t_vector<T, S...>& rhs) = default;
 
         // Comparision operators
         bool operator==(const t_vector<T, S...>& v) const
@@ -500,6 +502,8 @@ namespace Math
             m[3][2] = m32;
             m[3][3] = m33;
         }
+        
+        constexpr Matrix(const Matrix& rhs) = default;
 
         // Comparision operators
         bool operator==(const Matrix& M) const { return _glmMatrix == M._glmMatrix; }

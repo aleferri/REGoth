@@ -54,7 +54,7 @@ struct adpcm_channel {
 };
 
 struct adpcm_context {
-    struct adpcm_channel channels [2];
+    adpcm_channel channels [2];
     int num_channels, lookahead, noise_shaping;
 };
 
@@ -68,10 +68,10 @@ struct adpcm_context {
 
 void *adpcm_create_context (int num_channels, int lookahead, int noise_shaping, int32_t initial_deltas [2])
 {
-    struct adpcm_context *pcnxt = malloc (sizeof (struct adpcm_context));
+    adpcm_context *pcnxt = static_cast<adpcm_context*>( malloc( sizeof(adpcm_context) ) );
     int ch, i;
 
-    memset (pcnxt, 0, sizeof (struct adpcm_context));
+    memset (pcnxt, 0, sizeof (adpcm_context));
     pcnxt->noise_shaping = noise_shaping;
     pcnxt->num_channels = num_channels;
     pcnxt->lookahead = lookahead;
@@ -93,12 +93,12 @@ void *adpcm_create_context (int num_channels, int lookahead, int noise_shaping, 
 
 void adpcm_free_context (void *p)
 {
-    struct adpcm_context *pcnxt = (struct adpcm_context *) p;
+    adpcm_context *pcnxt = (adpcm_context *) p;
 
     free (pcnxt);
 }
 
-static void set_decode_parameters (struct adpcm_context *pcnxt, int32_t *init_pcmdata, int8_t *init_index)
+static void set_decode_parameters (adpcm_context *pcnxt, int32_t *init_pcmdata, int8_t *init_index)
 {
     int ch;
 
@@ -108,7 +108,7 @@ static void set_decode_parameters (struct adpcm_context *pcnxt, int32_t *init_pc
     }
 }
 
-static void get_decode_parameters (struct adpcm_context *pcnxt, int32_t *init_pcmdata, int8_t *init_index)
+static void get_decode_parameters (adpcm_context *pcnxt, int32_t *init_pcmdata, int8_t *init_index)
 {
     int ch;
 
@@ -118,10 +118,10 @@ static void get_decode_parameters (struct adpcm_context *pcnxt, int32_t *init_pc
     }
 }
 
-static double minimum_error (const struct adpcm_channel *pchan, int nch, int32_t csample, const int16_t *sample, int depth, int *best_nibble)
+static double minimum_error (const adpcm_channel *pchan, int nch, int32_t csample, const int16_t *sample, int depth, int *best_nibble)
 {
     int32_t delta = csample - pchan->pcmdata;
-    struct adpcm_channel chan = *pchan;
+    adpcm_channel chan = *pchan;
     int step = step_table[chan.index];
     int trial_delta = (step >> 3);
     int nibble, nibble2;
@@ -130,8 +130,7 @@ static double minimum_error (const struct adpcm_channel *pchan, int nch, int32_t
     if (delta < 0) {
         int mag = (-delta << 2) / step;
         nibble = 0x8 | (mag > 7 ? 7 : mag);
-    }
-    else {
+    } else {
         int mag = (delta << 2) / step;
         nibble = mag > 7 ? 7 : mag;
     }
@@ -150,9 +149,9 @@ static double minimum_error (const struct adpcm_channel *pchan, int nch, int32_t
         chan.index += index_table[nibble & 0x07];
         CLIP(chan.index, 0, 88);
         min_error += minimum_error (&chan, nch, sample [nch], sample + nch, depth - 1, NULL);
-    }
-    else
+    } else {
         return min_error;
+    }
 
     for (nibble2 = 0; nibble2 <= 0xF; ++nibble2) {
         double error;
@@ -188,9 +187,9 @@ static double minimum_error (const struct adpcm_channel *pchan, int nch, int32_t
     return min_error;
 }
 
-static uint8_t encode_sample (struct adpcm_context *pcnxt, int ch, const int16_t *sample, int num_samples)
+static uint8_t encode_sample (adpcm_context *pcnxt, int ch, const int16_t *sample, int num_samples)
 {
-    struct adpcm_channel *pchan = pcnxt->channels + ch;
+    adpcm_channel *pchan = pcnxt->channels + ch;
     int32_t csample = *sample;
     int depth = num_samples - 1, nibble;
     int step = step_table[pchan->index];
@@ -214,15 +213,16 @@ static uint8_t encode_sample (struct adpcm_context *pcnxt, int ch, const int16_t
 
             pchan->error = -csample;
             csample += temp;
-        }
-        else
+        } else {
             pchan->error = -(csample += temp);
-    }
-    else if (pcnxt->noise_shaping == NOISE_SHAPING_STATIC)
+        }   
+    } else if (pcnxt->noise_shaping == NOISE_SHAPING_STATIC) {
         pchan->error = -(csample -= pchan->error);
+    }
 
-    if (depth > pcnxt->lookahead)
+    if (depth > pcnxt->lookahead) {
         depth = pcnxt->lookahead;
+    }
 
     minimum_error (pchan, pcnxt->num_channels, csample, sample, depth, &nibble);
 
@@ -236,13 +236,14 @@ static uint8_t encode_sample (struct adpcm_context *pcnxt, int ch, const int16_t
     CLIP(pchan->index, 0, 88);
     CLIP(pchan->pcmdata, -32768, 32767);
 
-    if (pcnxt->noise_shaping)
+    if (pcnxt->noise_shaping) {
         pchan->error += pchan->pcmdata;
+    }
 
     return nibble;
 }
 
-static void encode_chunks (struct adpcm_context *pcnxt, uint8_t **outbuf, size_t *outbufsize, const int16_t **inbuf, int inbufcount)
+static void encode_chunks (adpcm_context *pcnxt, uint8_t **outbuf, size_t *outbufsize, const int16_t **inbuf, int inbufcount)
 {
     const int16_t *pcmbuf;
     int chunks, ch, i;
@@ -286,15 +287,16 @@ static void encode_chunks (struct adpcm_context *pcnxt, uint8_t **outbuf, size_t
 
 int adpcm_encode_block (void *p, uint8_t *outbuf, size_t *outbufsize, const int16_t *inbuf, int inbufcount)
 {
-    struct adpcm_context *pcnxt = (struct adpcm_context *) p;
+    adpcm_context *pcnxt = (adpcm_context *) p;
     int32_t init_pcmdata[2];
     int8_t init_index[2];
     int ch;
 
     *outbufsize = 0;
 
-    if (!inbufcount)
+    if (!inbufcount) {
         return 1;
+    }
 
     get_decode_parameters(pcnxt, init_pcmdata, init_index);
 
@@ -337,15 +339,17 @@ int adpcm_decode_block (int16_t *outbuf, const uint8_t *inbuf, size_t inbufsize,
     int32_t pcmdata[2];
     int8_t index[2];
 
-    if (inbufsize < (uint32_t) channels * 4)
+    if (inbufsize < (uint32_t) channels * 4) {
         return 0;
+    }
 
     for (ch = 0; ch < channels; ch++) {
         *outbuf++ = pcmdata[ch] = (int16_t) (inbuf [0] | (inbuf [1] << 8));
         index[ch] = inbuf [2];
 
-        if (index [ch] < 0 || index [ch] > 88 || inbuf [3])     // sanitize the input a little...
+        if (index [ch] < 0 || index [ch] > 88 || inbuf [3]) {    // sanitize the input a little...
             return 0;
+        }
 
         inbufsize -= 4;
         inbuf += 4;

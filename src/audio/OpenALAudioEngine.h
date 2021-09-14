@@ -4,11 +4,6 @@
 
 #include <string>
 
-typedef struct ALCdevice_struct ALCdevice;
-typedef struct ALCcontext_struct ALCcontext;
-typedef int ALenum;
-typedef unsigned int ALuint;
-
 namespace Audio
 {
     class OpenALSound;

@@ -14,8 +14,6 @@
 #include <utils/Utils.h>
 #include <vdfs/fileIndex.h>
 
-typedef struct ALCcontext_struct ALCcontext;
-
 namespace Audio
 {
     class AudioEngine;

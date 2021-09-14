@@ -8,9 +8,6 @@
 #include <mutex>
 #include <thread>
 
-#include <AL/al.h>
-#include <AL/alc.h>
-
 using namespace Audio;
 
 constexpr std::size_t OPENAL_SOURCES_POOL = 256;
